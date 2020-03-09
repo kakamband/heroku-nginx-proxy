@@ -37,6 +37,10 @@ http {
         server <%= ENV["HOST"] %>:443;
     }
 
+    upstream upstream_app_b {
+        server <%= ENV["INTERNAL_HOST"] %>:80;
+    }
+
     server {
         listen <%= ENV["PORT"] %>;
         server_name _;
@@ -47,6 +51,14 @@ http {
             proxy_set_header x-forwarded-host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header Host <%= ENV["HOST"] %>;
+        }
+
+        location /internal {
+            set $upstream upstream_app_b;
+            proxy_pass https://$upstream;
+            proxy_set_header x-forwarded-host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host <%= ENV["INTERNAL_HOST"] %>;
         }
     }
 }
