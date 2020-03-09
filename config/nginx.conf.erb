@@ -29,7 +29,6 @@ http {
 
     # handle SNI
     proxy_ssl_server_name on;
-    proxy_ssl_name *.herokuapp.com;
     # resolver needs to be set because we're using dynamic proxy_pass
     resolver 8.8.8.8;
 
@@ -38,7 +37,7 @@ http {
     }
 
     upstream upstream_app_b {
-        server <%= ENV["INTERNAL_HOST"] %>:80;
+        server <%= ENV["INTERNAL_HOST"] %>:443;
     }
 
     server {
@@ -46,6 +45,7 @@ http {
         server_name _;
 
         location / {
+            proxy_ssl_name <%= ENV["HOST"] %>;
             set $upstream upstream_app_a;
             proxy_pass https://$upstream;
             proxy_set_header x-forwarded-host $host;
@@ -54,6 +54,7 @@ http {
         }
 
         location /internal {
+            proxy_ssl_name <%= ENV["INTERNAL_HOST"] %>;
             set $upstream upstream_app_b;
             proxy_pass https://$upstream;
             proxy_set_header x-forwarded-host $host;
